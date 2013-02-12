@@ -45,5 +45,4 @@ fi
 # Now we can mount.
 
 sudo cryptsetup luksOpen $1 cryptDevice_`readlink -f $2 | tr -d '/'`
-
 sudo mount /dev/mapper/cryptDevice_`readlink -f $2 | tr -d '/'` $2 -ouid=`id -un`,gid=`id -gn`
