@@ -1,0 +1,30 @@
+#!/bin/bash
+#
+# SYNOPSIS: cryptmnt /dev/device mountpoint
+# DEPENDENCIES: bash, cryptsetup, mount, id, mountpoint, sudo
+#
+
+if [ "x`id -un`" = "xroot" ]
+then
+	echo "This script cannot be started as root."
+	exit
+fi
+
+if [ $# -lt 1 ]
+then
+	echo "Usage: $0 mountpoint"
+	exit
+fi
+
+mountpoint -q $1
+
+if [ $? -ne 0 ]
+then
+	echo "Directory $2 is not a mountpoint. Exiting..."
+	exit
+fi
+
+# Now we can umount.
+
+sudo umount $1
+sudo cryptsetup luksClose cryptDevice_`readlink -f $1 | tr -d '/'`

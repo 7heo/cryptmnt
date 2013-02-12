@@ -1,0 +1,49 @@
+#!/bin/bash
+#
+# SYNOPSIS: cryptmnt /dev/device mountpoint
+# DEPENDENCIES: bash, cryptsetup, mount, id, mountpoint, sudo
+#
+
+if [ "x`id -un`" = "xroot" ]
+then
+	echo "This script cannot be started as root."
+	exit
+fi
+
+if [ $# -lt 2 ]
+then
+	echo "Usage: $0 device mountpoint"
+	exit
+fi
+
+if [ ! -b $1 ]
+then
+	echo "File $1 is not a block special. Exiting..."
+	exit
+fi
+
+if [ ! -d $2 ]
+then
+	echo "$2 is not a directory. Exiting..."
+	exit
+fi
+
+mountpoint -q $2
+
+if [ $? -eq 0 ]
+then
+	echo "Directory $2 is already a mountpoint. Exiting..."
+	exit
+fi
+
+if [ "x`ls -A $2 | wc -l`" != "x0" ]
+then
+	echo "Directory $2 is not empty. Exiting..."
+	exit
+fi
+
+# Now we can mount.
+
+sudo cryptsetup luksOpen $1 cryptDevice_`readlink -f $2 | tr -d '/'`
+
+sudo mount /dev/mapper/cryptDevice_`readlink -f $2 | tr -d '/'` $2 -ouid=`id -un`,gid=`id -gn`
